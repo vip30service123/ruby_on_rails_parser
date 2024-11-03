@@ -20,11 +20,17 @@ class ParseCode:
 
     @staticmethod
     def _is_parent(potential_parent, potential_child) -> bool:
-        pass
+        if potential_parent["start_point"][0] < potential_child["start_point"][0] and potential_parent["end_point"][0] > potential_child["end_point"][0]:
+            return True
+        return False
 
-    @staticmethod
-    def _fill_all_parents(items: list) -> list:
-        pass
+    def _fill_all_parents(self, items: list) -> list:
+        for i, item in enumerate(items):
+            for another_item in items:
+                if item is not another_item and self._is_parent(another_item, item):
+                    if (another_item["type"] == "Module" and item["type"] == "Module") or (another_item["type"] == "Module" and item["type"] == "Class") or (another_item["type"] == "Class" and item["type"] == "Method") or (another_item["type"] == "Module" and item["type"] == "Method"):
+                        items[i]["parent"].append(another_item["name"])
+        return items
 
     @staticmethod
     def _parse_class_function_module_info(node: any, code: bytes) -> list[dict]:
@@ -38,11 +44,13 @@ class ParseCode:
                     "type": "Class",
                     "start_point": node.start_point,
                     "end_point": node.end_point,
-                    "ref": [] 
+                    "ref": [],
+                    "parent": [],
+                    "ref_items": []
                 }
                 if node.children:
                     for child in node.children:
-                        if child.type == "scope_resolution":
+                        if child.type == "scope_resolution" or child.type == "constant":
                             item["name"] = code[child.start_byte:child.end_byte].decode("utf-8")
                         if child.type == "superclass":
                             item["ref"].append(code[child.start_byte:child.end_byte].decode("utf-8"))
@@ -63,7 +71,9 @@ class ParseCode:
                     "type": "Method",
                     "start_point": node.start_point,
                     "end_point": node.end_point,
-                    "ref": [] 
+                    "ref": [],
+                    "parent": [],
+                    "ref_items": []
                 }
                 if node.children:
                     for child in node.children:
@@ -91,7 +101,9 @@ class ParseCode:
                     "type": "Module",
                     "start_point": node.start_point,
                     "end_point": node.end_point,
-                    "ref": [] 
+                    "ref": [],
+                    "parent": [],
+                    "ref_items": []
                 }
                 if node.children:
                     for child in node.children:
@@ -141,8 +153,10 @@ class ParseCode:
 
         root = code_ast.root_node
 
-        print(self._print_tree(root, code))
+        # print(self._print_tree(root, code))
 
         items = self._parse_class_function_module_info(root, code)
+
+        items = self._fill_all_parents(items)
 
         return items
