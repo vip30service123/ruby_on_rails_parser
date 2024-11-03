@@ -1,5 +1,5 @@
-from jedi_output_like import JediOutputLike
-from parse_all_codes import ParseAllCodes
+from .jedi_output_like import JediOutputLike
+from .parse_all_codes import ParseAllCodes
 
 
 class Parser:

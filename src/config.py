@@ -1,4 +1,4 @@
 class Config:
     repo_path: str = "data/dummy_project"
 
-    tree_sitter_ruby: str = "data/"
+    specific_file_path: str = r"data\dummy_project\app\controllers\v1\internal_controller.rb"
